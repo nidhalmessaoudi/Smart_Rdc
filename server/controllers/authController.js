@@ -15,11 +15,12 @@ async function verifyGoogleToken(token) {
 
 exports.postGoogleIdentity = async function (req, res) {
   try {
-    const { credential } = req.queries;
+    console.log(req);
+    const { credential } = req.query;
 
     console.log(credential);
 
-    const googleData = await verify(credential);
+    const googleData = await verifyGoogleToken(credential);
 
     res.status(200).json({
       status: "success",
