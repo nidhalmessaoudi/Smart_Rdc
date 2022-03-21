@@ -1,9 +1,29 @@
+import useHttp from "../../hooks/useHttp";
+import { useDispatch } from "react-redux";
+
+import { authActions } from "../../store/authSlice";
+
 function GoogleLogin() {
-  window.handleCredentialResponse = function handleCredentialResponse(
-    response
+  const [send, status, data] = useHttp();
+  const dispatch = useDispatch();
+
+  window.handleCredentialResponse = async function handleCredentialResponse(
+    res
   ) {
-    console.log("Encoded JWT ID token: " + response.credential);
+    console.log("Encoded JWT ID token: " + res.credential);
+
+    await send({
+      path: "/auth/google",
+      method: "POST",
+      body: {
+        credential: res.credential,
+      },
+    });
   };
+
+  if (data) {
+    dispatch(authActions.login(data.user));
+  }
 
   return (
     <>

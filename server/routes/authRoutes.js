@@ -4,6 +4,6 @@ const router = express.Router();
 
 const authController = require("../controllers/authController");
 
-router.post("/google", authController.postGoogleIdentity);
+router.post("/google", authController.postAuthenticateWithGoogle);
 
 module.exports = router;

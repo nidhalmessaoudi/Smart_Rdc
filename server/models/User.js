@@ -2,10 +2,6 @@ const mongoose = require("mongoose");
 const validator = require("validator");
 
 const UserSchema = new mongoose.Schema({
-  username: {
-    type: String,
-    required: [true, "A user must have a username!"],
-  },
   email: {
     type: String,
     required: [true, "A user must have an email!"],
@@ -14,6 +10,10 @@ const UserSchema = new mongoose.Schema({
       message: "A user must have a valid email!",
     },
   },
+  name: {
+    type: String,
+    required: [true, "A user must have a name!"],
+  },
   photo: {
     type: String,
     validate: {
@@ -21,6 +21,15 @@ const UserSchema = new mongoose.Schema({
       message: "A user must have a valid photo!",
     },
   },
+  googleId: {
+    type: String,
+  },
+  verified: {
+    type: Boolean,
+    default: false,
+  },
+  firstName: String,
+  familyName: String,
 });
 
 module.exports = mongoose.model("User", UserSchema);

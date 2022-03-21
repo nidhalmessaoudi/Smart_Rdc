@@ -1,38 +1,57 @@
 const { OAuth2Client } = require("google-auth-library");
+const User = require("../models/User");
 
 const googleOAuthClient = new OAuth2Client(process.env.GOOGLE_CLIENT_ID);
 
-async function verifyGoogleToken(token) {
-  const ticket = await googleOAuthClient.verifyIdToken({
-    idToken: token,
-    audience: process.env.GOOGLE_CLIENT_ID,
-  });
-  const payload = ticket.getPayload();
-  const userid = payload["sub"];
+async function verifyGoogleTokenAndGetUserInfos(token) {
+  try {
+    const ticket = await googleOAuthClient.verifyIdToken({
+      idToken: token,
+      audience: process.env.GOOGLE_CLIENT_ID,
+    });
+    const payload = ticket.getPayload();
 
-  return { payload, userid };
+    const userInfos = {
+      googleId: payload["aud"],
+      name: payload["name"],
+      firstName: payload["given_name"],
+      familyName: payload["family_name"],
+      email: payload["email"],
+      verified: payload["email_verified"],
+      photo: payload["picture"],
+    };
+
+    return userInfos;
+  } catch (err) {
+    throw new Error("Invalid Google Id Token!");
+  }
 }
 
-exports.postGoogleIdentity = async function (req, res) {
+exports.postAuthenticateWithGoogle = async function (req, res) {
   try {
-    console.log(req);
-    const { credential } = req.query;
-
+    console.log(req.body);
+    const { credential } = req.body;
     console.log(credential);
 
-    const googleData = await verifyGoogleToken(credential);
+    const userInfos = await verifyGoogleTokenAndGetUserInfos(credential);
+
+    let user = await User.findOne({ email: userInfos.email });
+
+    if (!user) {
+      user = await User.create(userInfos);
+    }
 
     res.status(200).json({
       status: "success",
       data: {
-        userid: googleData.userid,
+        user,
       },
     });
   } catch (err) {
     console.error(err);
 
-    res.status(500).json({
-      status: "fail",
+    res.status(400).json({
+      status: "Error",
       message: err.message,
     });
   }
